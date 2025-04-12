@@ -3,16 +3,15 @@ import Cookies from 'js-cookie'
 import {Navigate, useNavigate} from 'react-router-dom'
 import './index.css'
 
-const LoginForm = () => {
+const Signup = () => {
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [showSubmitError, setShowSubmitError] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const navigate = useNavigate()
 
-  const onSubmitSuccess = jwtToken => {
-    Cookies.set('jwt_token', jwtToken, {expires: 30})
-    navigate('/', {replace: true})
+  const onSubmitSuccess = () => {
+    navigate('/login', {replace: true})
   }
 
   const onSubmitFailure = errorMessage => {
@@ -22,20 +21,24 @@ const LoginForm = () => {
 
   const submitForm = async event => {
     event.preventDefault()
+    if (name === '' || password === '') {
+      onSubmitFailure('*Username and Password required')
+      return
+    }
+
     const userDetails = {name, password}
-    const loginApiUrl = 'https://jobbyback.onrender.com/login'
+    const signupApiUrl = 'https://jobbyback.onrender.com/signin'
 
     try {
-      const response = await fetch(loginApiUrl, {
+      const response = await fetch(signupApiUrl, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(userDetails),
       })
 
       const data = await response.json()
-
       if (response.ok) {
-        onSubmitSuccess(data.token)
+        onSubmitSuccess()
       } else {
         onSubmitFailure(data.error)
       }
@@ -52,7 +55,7 @@ const LoginForm = () => {
   return (
     <div className="auth-container">
       <form className="auth-form" onSubmit={submitForm}>
-        <h1 className="auth-heading">Login</h1>
+        <h1 className="auth-heading">Signup</h1>
         <div className="input-container">
           <label className="input-label" htmlFor="username">
             Username
@@ -81,14 +84,14 @@ const LoginForm = () => {
         </div>
         <div className="btn-group">
           <button className="btn" type="submit">
-            Login
+            Signup
           </button>
           <button
-            type="button"
             className="btn"
-            onClick={() => navigate('/signup')}
+            type="button"
+            onClick={() => navigate('/login')}
           >
-            Signup
+            Back
           </button>
         </div>
         {showSubmitError && <p className="error-message">*{errorMsg}</p>}
@@ -97,4 +100,4 @@ const LoginForm = () => {
   )
 }
 
-export default LoginForm
+export default Signup

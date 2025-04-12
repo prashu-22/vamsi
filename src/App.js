@@ -1,7 +1,9 @@
-import {Route, Switch, Redirect} from 'react-router-dom'
+import {Routes, Route, Navigate} from 'react-router-dom'
 
 import LoginForm from './components/LoginForm'
+import Signup from './components/Signup'
 import Home from './components/Home'
+import Footer from './components/Footer'
 import Products from './components/Products'
 import ProductItemDetails from './components/ProductItemDetails'
 import Cart from './components/Cart'
@@ -11,15 +13,22 @@ import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 
 const App = () => (
-  <Switch>
-    <Route exact path="/login" component={LoginForm} />
-    <ProtectedRoute exact path="/" component={Home} />
-    <ProtectedRoute exact path="/products" component={Products} />
-    <ProtectedRoute exact path="/products/:id" component={ProductItemDetails} />
-    <ProtectedRoute exact path="/cart" component={Cart} />
-    <Route path="/not-found" component={NotFound} />
-    <Redirect to="not-found" />
-  </Switch>
+  <Routes>
+    <Route path="/login" element={<LoginForm />} />
+    <Route path="/signup" element={<Signup />} />
+
+    {/* Protected routes */}
+    <Route element={<ProtectedRoute />}>
+      <Route path="/" element={<Products />} />
+      <Route path="/products" element={<Products />} />
+      <Route path="/products/:id" element={<ProductItemDetails />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/about" element={<Footer />} />
+    </Route>
+
+    <Route path="/not-found" element={<NotFound />} />
+    <Route path="*" element={<Navigate to="/not-found" replace />} />
+  </Routes>
 )
 
 export default App

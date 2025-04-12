@@ -1,107 +1,80 @@
-import {Link, withRouter} from 'react-router-dom'
+import {useState} from 'react'
+import {useNavigate, Link} from 'react-router-dom'
 
+import {
+  FaSearch,
+  FaHeart,
+  FaShoppingBag,
+  FaUser,
+  FaBars,
+  FaTimes,
+} from 'react-icons/fa'
 import Cookies from 'js-cookie'
-
 import './index.css'
 
-const Header = props => {
-  const onClickLogout = () => {
-    const {history} = props
+function Header() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
     Cookies.remove('jwt_token')
-    history.replace('/login')
+    navigate('/login')
   }
 
   return (
-    <nav className="nav-header">
-      <div className="nav-content">
-        <div className="nav-bar-mobile-logo-container">
-          <Link to="/">
-            <img
-              className="website-logo"
-              src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-logo-img.png"
-              alt="website logo"
-            />
-          </Link>
-          <button type="button" className="nav-mobile-btn">
-            <img
-              src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-log-out-img.png"
-              alt="nav logout"
-              className="nav-bar-image"
-              onClick={onClickLogout}
-            />
-          </button>
+    <header className="header">
+      <div className="header-container">
+        {/* Logo */}
+        <div className="logo-section">
+          <span className="logo-text">LOGO</span>
         </div>
 
-        <div className="nav-bar-large-container">
-          <Link to="/">
-            <img
-              className="website-logo"
-              src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-logo-img.png"
-              alt="website logo"
-            />
+        {/* Hamburger for mobile */}
+        <button
+          className="hamburger"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+        >
+          {menuOpen ? <FaTimes /> : <FaBars />}
+        </button>
+
+        {/* Nav Links */}
+        <nav className={`nav-links ${menuOpen ? 'open' : ''}`}>
+          <Link to="/products" onClick={() => setMenuOpen(false)}>
+            SHOP
           </Link>
-          <ul className="nav-menu">
-            <li className="nav-menu-item">
-              <Link to="/" className="nav-link">
-                Home
-              </Link>
-            </li>
+          <Link to="/cart" onClick={() => setMenuOpen(false)}>
+            CART
+          </Link>
+          <Link to="/stories" onClick={() => setMenuOpen(false)}>
+            STORIES
+          </Link>
+          <Link to="/about" onClick={() => setMenuOpen(false)}>
+            ABOUT
+          </Link>
+          <Link to="/contact" onClick={() => setMenuOpen(false)}>
+            CONTACT US
+          </Link>
+          <button className="logout-btn mobile-only" onClick={handleLogout}>
+            Logout
+          </button>
+        </nav>
 
-            <li className="nav-menu-item">
-              <Link to="/products" className="nav-link">
-                Products
-              </Link>
-            </li>
-
-            <li className="nav-menu-item">
-              <Link to="/cart" className="nav-link">
-                Cart
-              </Link>
-            </li>
-          </ul>
-          <button
-            type="button"
-            className="logout-desktop-btn"
-            onClick={onClickLogout}
-          >
+        {/* Icons and Logout for desktop */}
+        <div className="icon-section">
+          <FaSearch className="icon" />
+          <FaHeart className="icon" />
+          <FaShoppingBag className="icon" />
+          <FaUser className="icon" />
+          <div className="language">
+            ENG <span className="arrow">⌄</span>
+          </div>
+          <button className="logout-btn desktop-only" onClick={handleLogout}>
             Logout
           </button>
         </div>
       </div>
-      <div className="nav-menu-mobile">
-        <ul className="nav-menu-list-mobile">
-          <li className="nav-menu-item-mobile">
-            <Link to="/" className="nav-link">
-              <img
-                src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-home-icon.png"
-                alt="nav home"
-                className="nav-bar-image"
-              />
-            </Link>
-          </li>
-
-          <li className="nav-menu-item-mobile">
-            <Link to="/products" className="nav-link">
-              <img
-                src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-products-icon.png"
-                alt="nav products"
-                className="nav-bar-image"
-              />
-            </Link>
-          </li>
-          <li className="nav-menu-item-mobile">
-            <Link to="/cart" className="nav-link">
-              <img
-                src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-cart-icon.png"
-                alt="nav cart"
-                className="nav-bar-image"
-              />
-            </Link>
-          </li>
-        </ul>
-      </div>
-    </nav>
+    </header>
   )
 }
-
-export default withRouter(Header)
+export default Header

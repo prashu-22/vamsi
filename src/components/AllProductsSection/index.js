@@ -1,252 +1,124 @@
-import {Component} from 'react'
-import Loader from 'react-loader-spinner'
-import Cookies from 'js-cookie'
+import React, {useState, useEffect} from 'react'
 
-import FiltersGroup from '../FiltersGroup'
-import ProductCard from '../ProductCard'
-import ProductsHeader from '../ProductsHeader'
-
+import Footer from '../Footer'
 import './index.css'
 
-const categoryOptions = [
-  {
-    name: 'Clothing',
-    categoryId: '1',
-  },
-  {
-    name: 'Electronics',
-    categoryId: '2',
-  },
-  {
-    name: 'Appliances',
-    categoryId: '3',
-  },
-  {
-    name: 'Grocery',
-    categoryId: '4',
-  },
-  {
-    name: 'Toys',
-    categoryId: '5',
-  },
+const FILTERS = [
+  'IDEAL FOR',
+  'OCCASION',
+  'WORK',
+  'FABRIC',
+  'SEGMENT',
+  'SUITABLE FOR',
+  'RAW MATERIALS',
+  'PATTERN',
 ]
 
-const sortbyOptions = [
-  {
-    optionId: 'PRICE_HIGH',
-    displayText: 'Price (High-Low)',
-  },
-  {
-    optionId: 'PRICE_LOW',
-    displayText: 'Price (Low-High)',
-  },
-]
+const OPTIONS = ['Men', 'Women', 'Baby & Kids']
 
-const ratingsList = [
-  {
-    ratingId: '4',
-    imageUrl:
-      'https://assets.ccbp.in/frontend/react-js/rating-four-stars-img.png',
-  },
-  {
-    ratingId: '3',
-    imageUrl:
-      'https://assets.ccbp.in/frontend/react-js/rating-three-stars-img.png',
-  },
-  {
-    ratingId: '2',
-    imageUrl:
-      'https://assets.ccbp.in/frontend/react-js/rating-two-stars-img.png',
-  },
-  {
-    ratingId: '1',
-    imageUrl:
-      'https://assets.ccbp.in/frontend/react-js/rating-one-star-img.png',
-  },
-]
+const AllProductsSection = () => {
+  const [products, setProducts] = useState([])
+  const [expanded, setExpanded] = useState({})
+  const [selectedFilters, setSelectedFilters] = useState({})
 
-const apiStatusConstants = {
-  initial: 'INITIAL',
-  success: 'SUCCESS',
-  failure: 'FAILURE',
-  inProgress: 'IN_PROGRESS',
-}
+  useEffect(() => {
+    fetch('https://fakestoreapi.com/products')
+      .then(res => res.json())
+      .then(data => setProducts(data))
+  }, [])
 
-class AllProductsSection extends Component {
-  state = {
-    productsList: [],
-    apiStatus: apiStatusConstants.initial,
-    activeOptionId: sortbyOptions[0].optionId,
-    activeCategoryId: '',
-    searchInput: '',
-    activeRatingId: '',
-  }
+  const toggleExpand = filterName =>
+    setExpanded(prev => ({...prev, [filterName]: !prev[filterName]}))
 
-  componentDidMount() {
-    this.getProducts()
-  }
-
-  getProducts = async () => {
-    this.setState({
-      apiStatus: apiStatusConstants.inProgress,
+  const handleCheckboxChange = (filterName, option) => {
+    setSelectedFilters(prev => {
+      const current = prev[filterName] || []
+      return {
+        ...prev,
+        [filterName]: current.includes(option)
+          ? current.filter(item => item !== option)
+          : [...current, option],
+      }
     })
-    const jwtToken = Cookies.get('jwt_token')
-    const {
-      activeOptionId,
-      activeCategoryId,
-      searchInput,
-      activeRatingId,
-    } = this.state
-    const apiUrl = `https://apis.ccbp.in/products?sort_by=${activeOptionId}&category=${activeCategoryId}&title_search=${searchInput}&rating=${activeRatingId}`
-    const options = {
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-      },
-      method: 'GET',
-    }
-    const response = await fetch(apiUrl, options)
-    if (response.ok) {
-      const fetchedData = await response.json()
-      const updatedData = fetchedData.products.map(product => ({
-        title: product.title,
-        brand: product.brand,
-        price: product.price,
-        id: product.id,
-        imageUrl: product.image_url,
-        rating: product.rating,
-      }))
-      this.setState({
-        productsList: updatedData,
-        apiStatus: apiStatusConstants.success,
-      })
-    } else {
-      this.setState({
-        apiStatus: apiStatusConstants.failure,
-      })
-    }
   }
 
-  changeSortby = activeOptionId => {
-    this.setState({activeOptionId}, this.getProducts)
-  }
+  const applyFilterLogic = product =>
+    Object.entries(selectedFilters).every(([filter, selectedOptions]) => {
+      if (selectedOptions.length === 0) return true
+      const content = (product.title + product.description).toLowerCase()
+      return selectedOptions.some(option =>
+        content.includes(option.toLowerCase()),
+      )
+    })
 
-  clearFilters = () => {
-    this.setState(
-      {
-        searchInput: '',
-        activeCategoryId: '',
-        activeRatingId: '',
-      },
-      this.getProducts,
-    )
-  }
+  const filteredProducts = products.filter(applyFilterLogic)
 
-  changeRating = activeRatingId => {
-    this.setState({activeRatingId}, this.getProducts)
-  }
-
-  changeCategory = activeCategoryId => {
-    this.setState({activeCategoryId}, this.getProducts)
-  }
-
-  enterSearchInput = () => {
-    this.getProducts()
-  }
-
-  changeSearchInput = searchInput => {
-    this.setState({searchInput})
-  }
-
-  renderFailureView = () => (
-    <div className="products-error-view-container">
-      <img
-        src="https://assets.ccbp.in/frontend/react-js/nxt-trendz/nxt-trendz-products-error-view.png"
-        alt="products failure"
-        className="products-failure-img"
-      />
-      <h1 className="product-failure-heading-text">
-        Oops! Something Went Wrong
-      </h1>
-      <p className="products-failure-description">
-        We are having some trouble processing your request. Please try again.
-      </p>
-    </div>
-  )
-
-  renderProductsListView = () => {
-    const {productsList, activeOptionId} = this.state
-    const shouldShowProductsList = productsList.length > 0
-
-    return shouldShowProductsList ? (
+  return (
+    <div>
       <div className="all-products-container">
-        <ProductsHeader
-          activeOptionId={activeOptionId}
-          sortbyOptions={sortbyOptions}
-          changeSortby={this.changeSortby}
-        />
-        <ul className="products-list">
-          {productsList.map(product => (
-            <ProductCard productData={product} key={product.id} />
+        <div className="sidebar">
+          <h4>{filteredProducts.length} ITEMS</h4>
+          <label>
+            <input type="checkbox" />
+            <span>Customizable</span>
+          </label>
+          {FILTERS.map(filterName => (
+            <div className="filter-group" key={filterName}>
+              <div
+                className="filter-header"
+                onClick={() => toggleExpand(filterName)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ')
+                    toggleExpand(filterName)
+                }}
+              >
+                <strong>
+                  {filterName}
+                  <span className="arrow-icon">
+                    {expanded[filterName] ? '▲' : '▼'}
+                  </span>
+                </strong>
+              </div>
+              {expanded[filterName] && (
+                <div className="filter-options">
+                  {OPTIONS.map(option => (
+                    <label key={option}>
+                      <input
+                        type="checkbox"
+                        checked={
+                          selectedFilters[filterName]?.includes(option) || false
+                        }
+                        onChange={() =>
+                          handleCheckboxChange(filterName, option)
+                        }
+                      />
+                      {option}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
-        </ul>
-      </div>
-    ) : (
-      <div className="no-products-view">
-        <img
-          src="https://assets.ccbp.in/frontend/react-js/nxt-trendz/nxt-trendz-no-products-view.png"
-          className="no-products-img"
-          alt="no products"
-        />
-        <h1 className="no-products-heading">No Products Found</h1>
-        <p className="no-products-description">
-          We could not find any products. Try other filters.
-        </p>
-      </div>
-    )
-  }
+        </div>
 
-  renderLoadingView = () => (
-    <div className="products-loader-container">
-      <Loader type="ThreeDots" color="#0b69ff" height="50" width="50" />
+        <div className="products-section">
+          <div className="products-grid">
+            {filteredProducts.map(product => (
+              <div key={product.id} className="product-card">
+                <img src={product.image} alt={product.title} />
+                <h4>{product.title.substring(0, 25)}...</h4>
+                <p>${product.price}</p>
+                <button className="wishlist">♡</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <Footer />
     </div>
   )
-
-  renderAllProducts = () => {
-    const {apiStatus} = this.state
-
-    switch (apiStatus) {
-      case apiStatusConstants.success:
-        return this.renderProductsListView()
-      case apiStatusConstants.failure:
-        return this.renderFailureView()
-      case apiStatusConstants.inProgress:
-        return this.renderLoadingView()
-      default:
-        return null
-    }
-  }
-
-  render() {
-    const {activeCategoryId, searchInput, activeRatingId} = this.state
-
-    return (
-      <div className="all-products-section">
-        <FiltersGroup
-          searchInput={searchInput}
-          categoryOptions={categoryOptions}
-          ratingsList={ratingsList}
-          changeSearchInput={this.changeSearchInput}
-          enterSearchInput={this.enterSearchInput}
-          activeCategoryId={activeCategoryId}
-          activeRatingId={activeRatingId}
-          changeCategory={this.changeCategory}
-          changeRating={this.changeRating}
-          clearFilters={this.clearFilters}
-        />
-        {this.renderAllProducts()}
-      </div>
-    )
-  }
 }
 
 export default AllProductsSection
