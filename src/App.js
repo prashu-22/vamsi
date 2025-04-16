@@ -9,6 +9,7 @@ import ProductItemDetails from './components/ProductItemDetails'
 import Cart from './components/Cart'
 import NotFound from './components/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
+import WishlistPage from './components/WishlistPage'
 
 import './App.css'
 
@@ -23,6 +24,7 @@ const App = () => (
       <Route path="/products" element={<Products />} />
       <Route path="/products/:id" element={<ProductItemDetails />} />
       <Route path="/cart" element={<Cart />} />
+      <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/about" element={<Footer />} />
     </Route>
 

@@ -12,6 +12,21 @@
   padding: 16px 32px;
   flex-wrap: wrap;
 }
+/* Logo styling */
+.website-logo {
+  max-width: 150px; /* Adjust the size of your logo */
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Removes any unwanted space below the image */
+  margin: 0 auto; /* Centers the logo horizontally */
+}
+
+/* Optionally, add styling for the logo wrapper */
+.logo-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
 
 .logo-section {
   display: flex;
